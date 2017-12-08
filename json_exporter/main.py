@@ -21,7 +21,7 @@ import yaml
 from yaml.error import YAMLError
 import jsonpath_ng.ext
 
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 NAN = float('NaN')
 INVALID_METRIC_RE = re.compile(r'[^0-9a-zA-Z_:]')
 MULTI_UNDERSCORE_RE = re.compile(r'_+')
@@ -44,8 +44,8 @@ handlers:
 """
 
 # Create a metric to track time spent and requests made.
-REQUEST_TIME = Histogram('json_exporter_target_request_processing_seconds', 'Time spent processing request', ['name'])
-ERROR_COUNTER = Counter('json_exporter_error_count', 'Number of errors', ['name'])
+REQUEST_TIME = Histogram('json_exporter_collector_duration_seconds', 'Time spent collecting metrics from a target', ['name'])
+ERROR_COUNTER = Counter('json_exporter_collector_error_count', 'Number of collector errors for a target', ['name'])
 
 def debug(msg, *args):
     logging.debug(msg, *args)

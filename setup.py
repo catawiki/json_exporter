@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="json_exporter",
-    version="0.1.0",
+    version="0.2.0",
     description="export metrics from JSON HTTP(S) API endpoints",
     url="https://catawiki.com",
     author="Ids van der Molen",
