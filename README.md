@@ -82,25 +82,28 @@ targets:
 ```
 
 ### Global configuration
-
-| logging | The `logging` section changes the default logger configuration (see https://docs.python.org/2/library/logging.config.html), optional |
-| targets | The list of targets, optional |
+| item | description |
+|------|-------------|
+| `logging` | The `logging` section changes the default logger configuration (see https://docs.python.org/2/library/logging.config.html), optional |
+| `targets` | The list of targets, optional |
 
 ### Targets
-
-| name | name of the target, used in logging and exporter metrics |
-| url | the target url to scrape metrics from |
-| timeout | the timeout to use, defaults to 5 seconds, optional |
-| params | a mapping with query parameters to add to the url, optional |
-| headers | a mapping with HTTP headers to add to the url, optional |
-| ca_bundle | a certificate file name or OpenSSL `c_rehash` processed directory |
+| item | description |
+|------|-------------|
+| `name` | name of the target, used in logging and exporter metrics |
+| `url` | the target url to scrape metrics from |
+| `timeout` | the timeout to use, defaults to 5 seconds, optional |
+| `params` | a mapping with query parameters to add to the url, optional |
+| `headers` | a mapping with HTTP headers to add to the url, optional |
+| `ca_bundle` | a certificate file name or OpenSSL `c_rehash` processed directory, optional |
 
 ### Rules
-
-| name | name of the rule, can contain variables like `$metric` or `${metric}` which are substituted with group matches from the `regex` expression. |
-| object_path | a JSONPath expression to select the initial objects from the JSON object, optional |
-| metric_path | a JSONPath expression to select the metrics starting from the selected `object_path`, but can be relative (using `@`) or absolute (using `$`), optional |
-| metric_type | sets the type of the metric. Possible types are `untyped`, `gauge`, `counter`, `summary` and `histogram`. defaults to `untyped` |
-| regex | a regular expression used to extract values ("groups") from a metric_path. These values are inserted in template varaibles into rule names or static labels, optional |
-| dynamic_labels | key-value pairs that are added to a metric. The value of this label is determined dynamically with a JSONPath expression and must yield a single string value, optional |
-| static_labels | key-value pairs that are added to a metric. The value of this label is determined by inserting template values (variables must start with a `$` or be enclosed with `${` and `}`). For example using variables like `$metric` or `${metric}`, optional |
+| item | description |
+|------|-------------|
+| `name` | name of the rule, can contain variables like `$metric` or `${metric}` which are substituted with group matches from the `regex` expression. |
+| `object_path` | a JSONPath expression to select the initial objects from the JSON object, optional |
+| `metric_path` | a JSONPath expression to select the metrics starting from the selected `object_path`, but can be relative (using `@`) or absolute (using `$`), optional |
+| `metric_type` | sets the type of the metric. Possible types are `untyped`, `gauge`, `counter`, `summary` and `histogram`. defaults to `untyped` |
+| `regex` | a regular expression used to extract values ("groups") from a metric_path. These values are inserted in template varaibles into rule names or static labels, optional |
+| `dynamic_labels` | key-value pairs that are added to a metric. The value of this label is determined dynamically with a JSONPath expression and must yield a single string value, optional |
+| `static_labels` | key-value pairs that are added to a metric. The value of this label is determined by inserting template values (variables must start with a `$` or be enclosed with `${` and `}`). For example using variables like `$metric` or `${metric}`, optional |
