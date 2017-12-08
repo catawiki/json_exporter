@@ -91,7 +91,7 @@ class UntypedMetricFamily(Metric):
         self.samples.append((self.name, dict(zip(self._labelnames, labels)), value))
 
 def configure_logger(args, config):
-    'Create a logger object'
+    'Create logging'
     log_config = {'version': 1}
     if 'logging' in config:
         log_config.update(config['logging'])
@@ -162,7 +162,7 @@ class Rule(object):
             self.regex.pattern)
 
     def render(self, tmpl, variables):
-        'Render template tmpl with group matches from path.'
+        'Render template tmpl with variables.'
         return Template(tmpl).safe_substitute(variables)
 
     def match_regex(self, path):
@@ -261,7 +261,7 @@ class Target(object):
         self.rules.append(rule)
 
     def run(self):
-        'Execute this target.'
+        'Scrape this target.'
         with REQUEST_TIME.labels(self.name).time():
             self.scrape()
 
@@ -275,7 +275,7 @@ class Target(object):
         error('target {} at url {} {}'.format(self.name, self.url, msg), target=self.name)
 
     def scrape(self):
-        'Scrape the target and return metric families'
+        'Scrape the target and store metric families'
         try:
             response = self.session.get(self.url, params=self.params,
                                         headers=self.headers,
