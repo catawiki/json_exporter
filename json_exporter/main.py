@@ -21,12 +21,13 @@ import yaml
 from yaml.error import YAMLError
 import jsonpath_ng.ext
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 NAN = float('NaN')
 INVALID_METRIC_RE = re.compile(r'[^0-9a-zA-Z_:]')
 MULTI_UNDERSCORE_RE = re.compile(r'_+')
 TIMEOUT = 5
 PORT = 8000
+LISTEN = "0.0.0.0"
 THREAD_JOIN_TIMEOUT = 1
 DEFAULT_LOG_CONFIG = """
 root:
@@ -110,10 +111,10 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='export metrics from JSON HTTP(S) API endpoints (v{})'.format(VERSION))
     parser.add_argument("config", help='configuration file')
-    parser.add_argument('-p', '--port', help='port to listen on',
+    parser.add_argument('-p', '--port', help='port to listen on (default {})'.format(PORT),
                         type=int, default=PORT)
-    parser.add_argument('-l', '--listen', help='address to listen on',
-                        default="0.0.0.0")
+    parser.add_argument('-l', '--listen', help='address to listen on (default "{}")'.format(LISTEN),
+                        default=LISTEN)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
