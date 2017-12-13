@@ -1,6 +1,6 @@
 # JSON exporter
 This Prometheus exporter can be used to export metrics from a REST HTTP(S) API
-that provides JSON documents. We use JSONPath to extract the metrics and
+that provides JSON documents. We use JSONPath (https://github.com/h2non/jsonpath-ng) to extract the metrics and
 regular expressions to extract tokens from a metric path and use it to create
 metric names and labels.
 
