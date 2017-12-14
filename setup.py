@@ -2,10 +2,11 @@
 Setup script for json_exporter
 '''
 from setuptools import setup, find_packages
+from json_exporter import __version__
 
 setup(
     name="json_exporter",
-    version="0.2.1",
+    version=__version__,
     description="export metrics from JSON HTTP(S) API endpoints",
     url="https://catawiki.com",
     author="Ids van der Molen",
