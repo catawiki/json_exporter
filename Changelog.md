@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.2] - 2017-12-14
+### Changed
+- Use UntypedMetricFamily from upstream prometheus_client 0.1.0 library
+
 ## [0.2.1] - 2017-12-12
 ### Added
 - Added default port and listen settings to help message

@@ -16,7 +16,7 @@ import signal
 from string import Template
 import requests
 from prometheus_client import start_http_server, Histogram, Counter
-from prometheus_client.core import Metric, GaugeMetricFamily, CounterMetricFamily, SummaryMetricFamily, HistogramMetricFamily, REGISTRY
+from prometheus_client.core import UntypedMetricFamily, GaugeMetricFamily, CounterMetricFamily, SummaryMetricFamily, HistogramMetricFamily, REGISTRY
 import yaml
 from yaml.error import YAMLError
 import jsonpath_ng.ext
@@ -69,28 +69,6 @@ def fail(msg):
     'Print message and exit.'
     print >> sys.stderr, msg
     sys.exit(1)
-
-class UntypedMetricFamily(Metric):
-    '''A single untyped metric and its samples.
-    For use by custom collectors.
-    '''
-    def __init__(self, name, documentation, value=None, labels=None):
-        Metric.__init__(self, name, documentation, 'untyped')
-        if labels is not None and value is not None:
-            raise ValueError('Can only specify at most one of value and labels.')
-        if labels is None:
-            labels = []
-        self._labelnames = tuple(labels)
-        if value is not None:
-            self.add_metric([], value)
-
-    def add_metric(self, labels, value):
-        '''Add a metric to the metric family.
-        Args:
-        labels: A list of label values
-        value: The value of the metric.
-        '''
-        self.samples.append((self.name, dict(zip(self._labelnames, labels)), value))
 
 def configure_logger(args, config):
     'Create logging'
