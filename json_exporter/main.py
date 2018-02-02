@@ -46,19 +46,25 @@ handlers:
 """
 
 # Create a metric to track time spent and requests made.
-REQUEST_TIME = Histogram('json_exporter_collector_duration_seconds', 'Time spent collecting metrics from a target', ['name'])
-ERROR_COUNTER = Counter('json_exporter_collector_error_count', 'Number of collector errors for a target', ['name'])
+REQUEST_TIME = Histogram('json_exporter_collector_duration_seconds',
+                         'Time spent collecting metrics from a target', ['name'])
+ERROR_COUNTER = Counter('json_exporter_collector_error_count',
+                        'Number of collector errors for a target', ['name'])
 
 def debug(msg, *args):
+    'Log debug message.'
     logging.debug(msg, *args)
 
 def info(msg, *args):
+    'Log info message.'
     logging.info(msg, *args)
 
 def warn(msg, *args):
+    'Log warning message.'
     logging.warn(msg, *args)
 
 def error(msg, *args, **kwargs):
+    'Log error message.'
     if kwargs.get('target'):
         ERROR_COUNTER.labels(kwargs.get('target')).inc()
     else:
@@ -114,6 +120,14 @@ def load_config(filename):
 
     return config
 
+def render(tmpl, variables):
+    'Render template tmpl with variables.'
+    return Template(tmpl).safe_substitute(variables)
+
+def get_metric_name(name):
+    'Convert name into valid metric name.'
+    return MULTI_UNDERSCORE_RE.sub('_', INVALID_METRIC_RE.sub('_', name))
+
 class Rule(object):
     'Represent a single rule to collect metrics from a scraped JSON object.'
     def __init__(self, target_name, name, family, object_path, object_parser, metric_path, metric_parser,
@@ -141,20 +155,12 @@ class Rule(object):
             self.label_parsers.keys(),
             self.regex.pattern)
 
-    def render(self, tmpl, variables):
-        'Render template tmpl with variables.'
-        return Template(tmpl).safe_substitute(variables)
-
     def match_regex(self, path):
         'Return dictionary with regular expression groups from match on path.'
         m = self.regex.match(path)
         if m is not None:
             return m.groupdict()
         return {}
-
-    def get_metric_name(self, name):
-        'Convert name into valid metric name.'
-        return MULTI_UNDERSCORE_RE.sub('_', INVALID_METRIC_RE.sub('_', name))
 
     def get_metrics(self, data):
         'Return metric matches and values from dictionary data.'
@@ -166,7 +172,7 @@ class Rule(object):
                     value = float(str(match.value))
             except ValueError:
                 debug('target %s, rule %s, skipping value %s for path %s (not a number)',
-                              self.target_name, self.name, match.value, match.full_path)
+                      self.target_name, self.name, match.value, match.full_path)
                 continue
             yield (match, value)
 
@@ -178,12 +184,12 @@ class Rule(object):
         for label in self.label_parsers:
             res = [match.value for match in self.label_parsers[label].find(obj)]
             if len(res) != 1:
-                warn('target %s, rule %s, dynamic label "%s" returned %d matches instead of 1 for object path %s', 
-                             self.target_name, self.name, label, len(res), obj.full_path)
+                warn('target %s, rule %s, dynamic label "%s" returned %d matches instead of 1 for object path %s',
+                     self.target_name, self.name, label, len(res), obj.full_path)
                 dynamic_labels[label] = ""
             elif not isinstance(res[0], basestring):
                 warn('target %s, rule %s, dynamic label "%s" returned non-string value %r for object path %s',
-                             self.target_name, self.name, label, res[0], obj.full_path)
+                     self.target_name, self.name, label, res[0], obj.full_path)
                 dynamic_labels[label] = ""
             else:
                 dynamic_labels[label] = res[0]
@@ -202,13 +208,13 @@ class Rule(object):
             for match, value in self.get_metrics(obj):
                 metric_path = str(match.full_path)
                 re_variables = self.match_regex(metric_path)
-                metric_name = self.get_metric_name(self.render(self.name, re_variables))
+                metric_name = get_metric_name(render(self.name, re_variables))
                 metric_help = 'from %s' % metric_path
                 key = tuple((metric_name, labels))
                 if key not in cache:
                     cache[key] = self.family(metric_name, metric_help, labels=labels)
 
-                label_values = [self.render(label, re_variables) for label in self.static_label_values] + dynamic_label_values
+                label_values = [render(label, re_variables) for label in self.static_label_values] + dynamic_label_values
                 cache[key].add_metric(label_values, value)
 
             for metric_name in cache:
@@ -219,7 +225,7 @@ class Target(object):
     def __init__(self, name, url, params, headers, timeout, ca_bundle):
         self.name = name
         self.url = url
-        self.params = self._str_params(params)
+        self.params = str_params(params)
         self.headers = headers
         self.timeout = timeout
         self.session = requests.Session()
@@ -283,17 +289,17 @@ class Target(object):
         except requests.RequestException as exc:
             self.error('error in request ({})'.format(exc))
 
-    def _str_params(self, params):
-        'Stringify elements in param dict.'
-        d = {}
-        for k in params:
-            if params[k] is None:
-                d[k] = ""
-            elif isinstance(params[k], list):
-                d[k] = [str(i) for i in params[k]]
-            else:
-                d[k] = str(params[k])
-        return d
+def str_params(params):
+    'Stringify elements in param dict.'
+    d = {}
+    for k in params:
+        if params[k] is None:
+            d[k] = ""
+        elif isinstance(params[k], list):
+            d[k] = [str(i) for i in params[k]]
+        else:
+            d[k] = str(params[k])
+    return d
 
 def read_from(source, item, default=None):
     'Try to get item from source and return default if result is false.'
@@ -332,16 +338,16 @@ class JSONCollector(object):
 
         if not rule_name:
             warn('skipping target %s, rule %d without a name',
-                         target_name, rule_idx + 1)
+                 target_name, rule_idx + 1)
             return None
 
         try:
             object_parser = jsonpath_ng.ext.parse(object_path)
         except Exception as exc:
             warn('skipping target %s, rule %s with invalid object_path %s (%s)',
-                         target_name, rule_name, object_path, exc)
+                 target_name, rule_name, object_path, exc)
             return None
-        
+
         family = {'untyped':   UntypedMetricFamily,
                   'counter':   CounterMetricFamily,
                   'gauge':     GaugeMetricFamily,
@@ -350,14 +356,14 @@ class JSONCollector(object):
                  }.get(metric_type)
         if family is None:
             warn('skipping target %s, rule %s with invalid metric_type (%s)',
-                         target_name, rule_name, metric_type)
+                 target_name, rule_name, metric_type)
             return None
-        
+
         try:
             metric_parser = jsonpath_ng.ext.parse(metric_path)
         except Exception as exc:
             warn('skipping target %s, rule %s with invalid metric_path %s (%s)',
-                         target_name, rule_name, metric_path, exc)
+                 target_name, rule_name, metric_path, exc)
             return None
 
         static_label_keys = sorted(static_labels)
@@ -368,15 +374,15 @@ class JSONCollector(object):
             try:
                 label_parsers[label] = jsonpath_ng.ext.parse(label_value)
             except Exception as exc:
-                warn('skipping target %s, rule %s with invalid dynamic label %s=%s (%s)', 
-                             target_name, rule_name, label, label_value, exc)
+                warn('skipping target %s, rule %s with invalid dynamic label %s=%s (%s)',
+                     target_name, rule_name, label, label_value, exc)
                 return None
-        
+
         try:
             regex = re.compile(read_from(rule, 'regex', r'^$'))
         except Exception as exc:
             warn('skipping target %s, rule %s with invalid regex (%s)',
-                         target_name, rule_name, exc)
+                 target_name, rule_name, exc)
             return None
 
         return Rule(target_name, rule_name, family,
@@ -428,9 +434,9 @@ class Notifier(object):
     'Get notified about signals.'
     def __init__(self):
         self.terminate = False
-        signal.signal(signal.SIGINT,  self.handler)
+        signal.signal(signal.SIGINT, self.handler)
         signal.signal(signal.SIGTERM, self.handler)
-        signal.signal(signal.SIGHUP,  self.handler)
+        signal.signal(signal.SIGHUP, self.handler)
 
     def handler(self, signum, frame):
         'Handler for signals.'
