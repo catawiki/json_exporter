@@ -13,6 +13,7 @@ import logging.config
 import re
 import threading
 import signal
+import time
 from string import Template
 import requests
 from prometheus_client import start_http_server, Histogram, Counter
@@ -209,6 +210,7 @@ class Rule(object):
                 metric_path = str(match.full_path)
                 re_variables = self.match_regex(metric_path)
                 metric_name = get_metric_name(render(self.name, re_variables))
+                debug('create metric_name %s from metric_path %s with value %s', metric_name, metric_path, value)
                 metric_help = 'from %s' % metric_path
                 key = tuple((metric_name, labels))
                 if key not in cache:
@@ -222,16 +224,20 @@ class Rule(object):
 
 class Target(object):
     'Represent a single target HTTP(S) endpoint to scrape JSON from.'
-    def __init__(self, name, url, params, headers, timeout, ca_bundle):
+    def __init__(self, name, method, url, params, headers, body, timeout, ca_bundle, strftime, strftime_utc):
         self.name = name
+        self.method = method
         self.url = url
         self.params = str_params(params)
         self.headers = headers
+        self.body = body
         self.timeout = timeout
         self.session = requests.Session()
         # verify can also be set to ca_bundle file or directory
         # see http://docs.python-requests.org/en/master/user/advanced/#ssl-cert-verification
         self.session.verify = ca_bundle
+        self.strftime = strftime
+        self.strftime_utc = strftime_utc
         self.rules = []
         self.metric_families = []
 
@@ -263,9 +269,24 @@ class Target(object):
     def scrape(self):
         'Scrape the target and store metric families'
         try:
-            response = self.session.get(self.url, params=self.params,
-                                        headers=self.headers,
-                                        timeout=self.timeout)
+            if self.strftime:
+                if self.strftime_utc:
+                    t = time.gmtime()
+                else:
+                    t = time.localtime()
+                variables = {'strftime': time.strftime(self.strftime, t)}
+                url = render(self.url, variables)
+                params = {k: render(self.params[k], variables) for k in self.params}
+                data = render(self.body, variables)
+            else:
+                url = self.url
+                params = self.params
+                data = self.body
+
+            debug('scrape method=%s, url=%s, params=%r, headers=%r, data=%r', self.method, url, params, self.headers, data)
+            response = self.session.request(self.method, url, params=params,
+                                            headers=self.headers, data=data,
+                                            timeout=self.timeout)
             response.raise_for_status()
 
             try:
@@ -274,6 +295,7 @@ class Target(object):
                 self.error('could not decode JSON response')
                 return
 
+            debug('scrape response=%r', data)
             self.metric_families = []
             for rule in self.rules:
                 for family in rule.get_metric_families(data):
@@ -313,18 +335,22 @@ class JSONCollector(object):
     def read_target_config(self, target, glb_timeout, glb_ca_bundle, target_idx):
         'Read configuration items from target config.'
         target_name = read_from(target, 'name')
+        method = read_from(target, 'method', 'GET')
         url = read_from(target, 'url')
         params = read_from(target, 'params', {})
         headers = read_from(target, 'headers', {})
+        body = read_from(target, 'body', None)
         timeout = read_from(target, 'timeout', glb_timeout)
         ca_bundle = read_from(target, 'ca_bundle', glb_ca_bundle)
+        strftime = read_from(target, 'strftime', '')
+        strftime_utc = bool(read_from(target, 'strftime_utc', True))
         if not target_name:
             warn('skipping target %d without a name', target_idx + 1)
             return None
         if not url:
             warn('skipping target %s without a url', target_name)
             return None
-        return Target(target_name, url, params, headers, timeout, ca_bundle)
+        return Target(target_name, method, url, params, headers, body, timeout, ca_bundle, strftime, strftime_utc)
 
     def read_rule_config(self, rule, target_name, rule_idx):
         'Read configuration items from rule config.'

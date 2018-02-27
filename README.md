@@ -91,10 +91,14 @@ targets:
 | item | description |
 |------|-------------|
 | `name` | name of the target, used in logging and exporter metrics |
+| `method` | HTTP method to use when scraping target, defaults to GET, optional |
 | `url` | the target url to scrape metrics from |
 | `timeout` | the timeout to use, defaults to 5 seconds, optional |
 | `params` | a mapping with query parameters to add to the url, optional |
-| `headers` | a mapping with HTTP headers to add to the url, optional |
+| `headers` | a mapping with HTTP headers to use when scraping target, optional |
+| `body` | data to use in message body when scraping target, optional |
+| `strftime` | time format string https://docs.python.org/2/library/time.html#time.strftime, can be used as template variable in `url`, `params` and `body`, optional |
+| `strtime_utc` | boolean to indicate if the time used in variable must be in UTC, defaults to `yes`, optional |
 | `ca_bundle` | a certificate file name or OpenSSL `c_rehash` processed directory, optional |
 
 ### Rules
