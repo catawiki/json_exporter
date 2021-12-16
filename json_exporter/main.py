@@ -74,7 +74,7 @@ def error(msg, *args, **kwargs):
 
 def fail(msg):
     'Print message and exit.'
-    print >> sys.stderr, msg
+    print(msg, file=sys.stderr)
     sys.exit(1)
 
 def configure_logger(args, config):
@@ -110,7 +110,7 @@ def load_config(filename):
     'Load YAML config from filename.'
     try:
         with open(filename) as config_file:
-            config = yaml.load(config_file)
+            config = yaml.safe_load(config_file)
     except (OSError, IOError) as exc:
         fail('could not open config file {} ({})'.format(filename, exc))
     except YAMLError as exc:
@@ -188,7 +188,7 @@ class Rule(object):
                 warn('target %s, rule %s, dynamic label "%s" returned %d matches instead of 1 for object path %s',
                      self.target_name, self.name, label, len(res), obj.full_path)
                 dynamic_labels[label] = ""
-            elif not isinstance(res[0], basestring):
+            elif not isinstance(res[0], str):
                 warn('target %s, rule %s, dynamic label "%s" returned non-string value %r for object path %s',
                      self.target_name, self.name, label, res[0], obj.full_path)
                 dynamic_labels[label] = ""
