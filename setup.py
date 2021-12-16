@@ -17,7 +17,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -30,16 +30,16 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ],
     keywords="prometheus json exporter",
     packages=find_packages(),
-    install_requires=["jsonpath-ng>=1.4.3",
-                      "prometheus-client>=0.1.0,<0.4.0",
-                      "PyYAML>=3.12",
-                      "requests>=2.18.4"],
-    python_requires=">=2.7, <3",
+    install_requires=["jsonpath-ng==1.5.3",
+                      "prometheus-client==0.12.0",
+                      "PyYAML==6.0",
+                      "requests==2.26.0"],
+    python_requires=">=3.6",
     py_modules=[],
     entry_points={
         'console_scripts': [
