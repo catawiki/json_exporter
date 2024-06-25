@@ -5,22 +5,25 @@ Based on
 https://www.robustperception.io/writing-json-exporters-in-python/
 https://www.robustperception.io/writing-a-jenkins-exporter-in-python/
 '''
-import sys
-import time
 import argparse
 import logging
 import logging.config
 import re
-import threading
 import signal
+import sys
+import threading
 import time
 from string import Template
-import requests
-from prometheus_client import start_http_server, Histogram, Counter
-from prometheus_client.core import UntypedMetricFamily, GaugeMetricFamily, CounterMetricFamily, SummaryMetricFamily, HistogramMetricFamily, REGISTRY
-import yaml
-from yaml.error import YAMLError
+
 import jsonpath_ng.ext
+import requests
+import yaml
+from prometheus_client import Counter, Histogram, start_http_server
+from prometheus_client.core import (REGISTRY, CounterMetricFamily,
+                                    GaugeMetricFamily, HistogramMetricFamily,
+                                    SummaryMetricFamily, UntypedMetricFamily)
+from yaml.error import YAMLError
+
 from . import __version__
 
 VERSION = __version__
@@ -48,21 +51,27 @@ handlers:
 
 # Create a metric to track time spent and requests made.
 REQUEST_TIME = Histogram('json_exporter_collector_duration_seconds',
-                         'Time spent collecting metrics from a target', ['name'])
+                         'Time spent collecting metrics from a target',
+                         ['name'])
 ERROR_COUNTER = Counter('json_exporter_collector_error_count',
-                        'Number of collector errors for a target', ['name'])
+                        'Number of collector errors for a target',
+                        ['name'])
+
 
 def debug(msg, *args):
     'Log debug message.'
     logging.debug(msg, *args)
 
+
 def info(msg, *args):
     'Log info message.'
     logging.info(msg, *args)
 
+
 def warn(msg, *args):
     'Log warning message.'
     logging.warn(msg, *args)
+
 
 def error(msg, *args, **kwargs):
     'Log error message.'
@@ -72,10 +81,12 @@ def error(msg, *args, **kwargs):
         ERROR_COUNTER.inc()
     logging.error(msg, *args)
 
+
 def fail(msg):
     'Print message and exit.'
     print(msg, file=sys.stderr)
     sys.exit(1)
+
 
 def configure_logger(args, config):
     'Create logging'
@@ -92,6 +103,7 @@ def configure_logger(args, config):
     elif args.verbose:
         logger.setLevel(logging.DEBUG)
 
+
 def parse_args():
     'Parse program arguments'
     parser = argparse.ArgumentParser(
@@ -105,6 +117,7 @@ def parse_args():
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
     return parser.parse_args()
+
 
 def load_config(filename):
     'Load YAML config from filename.'
@@ -121,18 +134,23 @@ def load_config(filename):
 
     return config
 
+
 def render(tmpl, variables):
     'Render template tmpl with variables.'
     return Template(tmpl).safe_substitute(variables)
+
 
 def get_metric_name(name):
     'Convert name into valid metric name.'
     return MULTI_UNDERSCORE_RE.sub('_', INVALID_METRIC_RE.sub('_', name))
 
+
 class Rule(object):
     'Represent a single rule to collect metrics from a scraped JSON object.'
-    def __init__(self, target_name, name, family, object_path, object_parser, metric_path, metric_parser,
-                 static_label_keys, static_label_values, label_parsers, regex):
+
+    def __init__(self, target_name, name, family, object_path, object_parser,
+                 metric_path, metric_parser, static_label_keys,
+                 static_label_values, label_parsers, regex):
         self.target_name = target_name
         self.name = name
         self.family = family
@@ -146,15 +164,20 @@ class Rule(object):
         self.regex = regex
 
     def __str__(self):
-        return 'name=%s target=%s object_path=%s metric_path=%s static_label_keys=%r static_label_values=%r dynamic_labels=%r regex=%s' % (
-            self.name,
-            self.target_name,
-            self.object_path,
-            self.metric_path,
-            self.static_label_keys,
-            self.static_label_values,
-            self.label_parsers.keys(),
-            self.regex.pattern)
+        return (
+            'name=%s target=%s object_path=%s metric_path=%s '
+            'static_label_keys=%r static_label_values=%r '
+            'dynamic_labels=%r regex=%s' % (
+                self.name,
+                self.target_name,
+                self.object_path,
+                self.metric_path,
+                self.static_label_keys,
+                self.static_label_values,
+                self.label_parsers.keys(),
+                self.regex.pattern
+            )
+        )
 
     def match_regex(self, path):
         'Return dictionary with regular expression groups from match on path.'
@@ -216,15 +239,19 @@ class Rule(object):
                 if key not in cache:
                     cache[key] = self.family(metric_name, metric_help, labels=labels)
 
-                label_values = [render(label, re_variables) for label in self.static_label_values] + dynamic_label_values
+                label_values = [render(label, re_variables)
+                                for label in self.static_label_values] + dynamic_label_values
                 cache[key].add_metric(label_values, value)
 
             for metric_name in cache:
                 yield cache[metric_name]
 
+
 class Target(object):
     'Represent a single target HTTP(S) endpoint to scrape JSON from.'
-    def __init__(self, name, method, url, params, headers, body, timeout, ca_bundle, strftime, strftime_utc):
+
+    def __init__(self, name, method, url, params, headers, body,
+                 timeout, ca_bundle, strftime, strftime_utc):
         self.name = name
         self.method = method
         self.url = url
@@ -283,7 +310,8 @@ class Target(object):
                 params = self.params
                 data = self.body
 
-            debug('scrape method=%s, url=%s, params=%r, headers=%r, data=%r', self.method, url, params, self.headers, data)
+            debug('scrape method=%s, url=%s, params=%r, headers=%r, data=%r',
+                  self.method, url, params, self.headers, data)
             response = self.session.request(self.method, url, params=params,
                                             headers=self.headers, data=data,
                                             timeout=self.timeout)
@@ -304,12 +332,13 @@ class Target(object):
             self.error('received unsuccesful response ({})'.format(exc))
         except requests.ConnectionError as exc:
             self.error('could not connect to url ({})'.format(exc))
-        except requests.Timeout as exc:
+        except requests.Timeout:
             self.error('connection timed out')
-        except requests.TooManyRedirects as exc:
+        except requests.TooManyRedirects:
             self.error('too many redirects')
         except requests.RequestException as exc:
             self.error('error in request ({})'.format(exc))
+
 
 def str_params(params):
     'Stringify elements in param dict.'
@@ -323,12 +352,15 @@ def str_params(params):
             d[k] = str(params[k])
     return d
 
+
 def read_from(source, item, default=None):
     'Try to get item from source and return default if result is false.'
     return source.get(item) or default
 
+
 class JSONCollector(object):
     'Single JSON endpoint metric collector'
+
     def __init__(self, config):
         self.targets = list(self.read_config(config))
 
@@ -350,7 +382,8 @@ class JSONCollector(object):
         if not url:
             warn('skipping target %s without a url', target_name)
             return None
-        return Target(target_name, method, url, params, headers, body, timeout, ca_bundle, strftime, strftime_utc)
+        return Target(target_name, method, url, params, headers, body,
+                      timeout, ca_bundle, strftime, strftime_utc)
 
     def read_rule_config(self, rule, target_name, rule_idx):
         'Read configuration items from rule config.'
@@ -379,7 +412,7 @@ class JSONCollector(object):
                   'gauge':     GaugeMetricFamily,
                   'summary':   SummaryMetricFamily,
                   'histogram': HistogramMetricFamily
-                 }.get(metric_type)
+                  }.get(metric_type)
         if family is None:
             warn('skipping target %s, rule %s with invalid metric_type (%s)',
                  target_name, rule_name, metric_type)
@@ -456,8 +489,10 @@ class JSONCollector(object):
             for metric_family in target.get_metric_families():
                 yield metric_family
 
+
 class Notifier(object):
     'Get notified about signals.'
+
     def __init__(self):
         self.terminate = False
         signal.signal(signal.SIGINT, self.handler)
@@ -468,6 +503,7 @@ class Notifier(object):
         'Handler for signals.'
         if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             self.terminate = True
+
 
 def main():
     'Main'
@@ -486,6 +522,7 @@ def main():
     while not notifier.terminate:
         time.sleep(1)
     info('stopping http server on {}:{}'.format(args.listen, args.port))
+
 
 if __name__ == '__main__':
     main()
