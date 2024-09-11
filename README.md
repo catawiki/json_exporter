@@ -111,3 +111,30 @@ targets:
 | `regex` | a regular expression used to extract values ("groups") from a metric_path. These values are inserted in template varaibles into rule names or static labels, optional |
 | `dynamic_labels` | key-value pairs that are added to a metric. The value of this label is determined dynamically with a JSONPath expression and must yield a single string value, optional |
 | `static_labels` | key-value pairs that are added to a metric. The value of this label is determined by inserting template values (variables must start with a `$` or be enclosed with `${` and `}`). For example using variables like `$metric` or `${metric}`, optional |
+
+## Test with docker
+Steps to create a test setup and test with docker:
+1. create a test configuration file `test.yaml` like:
+```yaml
+logging:
+    root:
+        level: INFO
+        handlers:
+            - console
+    formatters:
+        brief:
+            format: "%(asctime)s %(levelname)s: %(message)s"
+    handlers:
+        console:
+            class: logging.StreamHandler
+            stream: ext://sys.stdout
+            formatter: brief
+
+targets: []
+```
+1. build the container image with `docker build -t json_exporter .`
+1. run the container with `docker run -it --rm -p 8000:8000  -v `pwd`:/workspace json_exporter /workspace/test.yaml`
+1. in a separate window check if you get metrics:
+```bash
+curl -sv localhost:8000
+```
