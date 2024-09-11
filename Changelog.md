@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.1] - 2024-09-11
+## Changed
+- Upgrade PyYAML from 6.0 to 6.0.2
+- Add `Dockerfile`
+- Format python code
+- Add `.pre-commit-config.yaml`
+
+## [1.0.0] - 2021-12-16
+## Breaking changes
+- `prometheus_client >= 4.0` add `_total` suffix to Counter type metrics
+- drop support for Python 2.7, require Python >= 3.6
+## Changes
+- Upgrade `jsonpath-ng`, `PyYAML` and `requests`
+- Add `requirements.txt`
+- Mark as `Production/stable`
+
 ## [0.2.3] - 2018-11-19
 ### Changed
 - Require prometheus_client < 0.4.0 because of incompatible changes
