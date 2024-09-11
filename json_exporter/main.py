@@ -13,7 +13,6 @@ import logging.config
 import re
 import threading
 import signal
-import time
 from string import Template
 import requests
 from prometheus_client import start_http_server, Histogram, Counter
