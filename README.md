@@ -160,7 +160,7 @@ uv run pytest
 * update `Changelog.md`
 * run:
 ```bash
-uv pip freeze > requirements.txt
+uv export --no-dev  --locked --no-hashes > requirements.txt
 ```
 * test package build:
 ```bash
