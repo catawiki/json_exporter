@@ -133,8 +133,39 @@ logging:
 targets: []
 ```
 1. build the container image with `docker build -t json_exporter .`
-1. run the container with `docker run -it --rm -p 8000:8000  -v `pwd`:/workspace json_exporter /workspace/test.yaml`
+1. run the container with
+```bash
+docker run -it --rm -p 8000:8000  -v `pwd`:/workspace json_exporter /workspace/test.yaml
+```
 1. in a separate window check if you get metrics:
 ```bash
 curl -sv localhost:8000
 ```
+## Development
+Setup python:
+```bash
+uv python install 3.8
+uv python pin 3.8
+```
+Setup virtualenv:
+```bash
+uv sync
+```
+Run tests:
+```bash
+uv run pytest
+```
+### Before release
+* update `__version__` in `json_exporter/__init__.py`
+* update `Changelog.md`
+* run:
+```bash
+uv export --no-dev  --frozen --no-hashes > requirements.txt
+```
+* test package build:
+```bash
+uv build
+```
+### Release
+After new version has been merged into master:
+* create Github release

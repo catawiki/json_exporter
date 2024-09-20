@@ -1,0 +1,28 @@
+name: Pre-commit auto-update
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3 0 1 * *'
+
+jobs:
+  auto-update:
+    permissions:
+      contents: write # for peter-evans/create-pull-request to create branch
+      pull-requests: write # for peter-evans/create-pull-request to create a PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pre-commit
+        shell: bash
+      - run: pre-commit autoupdate --config .pre-commit-config.yaml --freeze
+        shell: bash
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/pre-commit-hooks
+          title: Update pre-commit hooks
+          commit-message: "chore: update pre-commit hooks"
+          body: Update versions of pre-commit hooks to latest version.

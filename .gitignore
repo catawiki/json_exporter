@@ -1,5 +1,4 @@
 dist
 json_exporter.egg-info
 build
-tests
 *.pyc

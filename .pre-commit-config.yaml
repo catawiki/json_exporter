@@ -1,10 +1,20 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.6.4
+    rev: ef9b09598d53bbcde9cd388ac73a145e67537b44  # frozen: v0.6.6
     hooks:
       # Run the linter.
       - id: ruff
         args: [--fix]
       # Run the formatter.
       - id: ruff-format
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: cd08150eb312f2ab81d718d3909493d07cc73bf0  # frozen: 0.4.13
+    hooks:
+      - id: uv-export
+        args:
+          - --frozen
+          - --no-dev
+          - --no-hashes
+          - --output-file=requirements.txt
