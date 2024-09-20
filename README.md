@@ -138,3 +138,31 @@ targets: []
 ```bash
 curl -sv localhost:8000
 ```
+## Development
+Setup python:
+```bash
+uv python install 3.8
+uv python pin 3.8
+```
+Setup virtualenv:
+```bash
+uv sync
+```
+Run tests:
+```bash
+uv run pytest
+```
+### Before release
+* update `__version__` in `json_exporter/__init__.py`
+* update `Changelog.md`
+* run:
+```bash
+uv pip freeze > requirements.txt
+```
+* test package build:
+```bash
+uv build
+```
+### Release
+After new version has been merged into master:
+* create Github release

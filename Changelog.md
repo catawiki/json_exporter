@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-09-20
+## Changed
+- Add `pyproject.toml`
+- Add `uv.lock`
+- Add/fix defaults to `Target` class `__init__`
+- Add basic tests
+
 ## [1.0.1] - 2024-09-11
 ## Changed
 - Upgrade PyYAML from 6.0 to 6.0.2
