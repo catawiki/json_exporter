@@ -4,7 +4,7 @@ certifi==2024.8.30
 charset-normalizer==3.3.2
 decorator==5.1.1
 idna==3.10
-jsonpath-ng==1.5.3
+jsonpath-ng==1.6.1
 ply==3.11
 prometheus-client==0.12.0
 pyyaml==6.0.2
