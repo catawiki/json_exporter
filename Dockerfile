@@ -2,7 +2,8 @@ FROM python:3.8-alpine
 
 ARG USERNAME=json_exporter
 
-ADD ./ /tmp/code
+ADD pyproject.toml requirements.txt /tmp/code/
+ADD json_exporter /tmp/code/json_exporter/
 
 WORKDIR /tmp/code
 
