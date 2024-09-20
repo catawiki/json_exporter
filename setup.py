@@ -37,7 +37,7 @@ setup(
         "jsonpath-ng==1.5.3",
         "prometheus-client==0.12.0",
         "pyyaml==6.0.2",
-        "requests==2.32.0",
+        "requests==2.32.3",
     ],
     python_requires=">=3.8",
     py_modules=[],

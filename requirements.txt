@@ -8,6 +8,6 @@ jsonpath-ng==1.5.3
 ply==3.11
 prometheus-client==0.12.0
 pyyaml==6.0.2
-requests==2.32.0
+requests==2.32.3
 six==1.16.0
 urllib3==2.2.3
