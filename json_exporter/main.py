@@ -306,21 +306,21 @@ class Target(object):
     def __init__(
         self,
         name,
-        method,
-        url,
-        params,
-        headers,
-        body,
-        timeout,
-        ca_bundle,
-        strftime,
-        strftime_utc,
+        method="GET",
+        url="http://example.org",
+        params=None,
+        headers=None,
+        body=None,
+        timeout=TIMEOUT,
+        ca_bundle=True,
+        strftime="",
+        strftime_utc=True,
     ):
         self.name = name
         self.method = method
         self.url = url
-        self.params = str_params(params)
-        self.headers = headers
+        self.params = str_params(params if params else {})
+        self.headers = headers if headers else {}
         self.body = body
         self.timeout = timeout
         self.session = requests.Session()
@@ -448,9 +448,9 @@ class JSONCollector(object):
         target_name = read_from(target, "name")
         method = read_from(target, "method", "GET")
         url = read_from(target, "url")
-        params = read_from(target, "params", {})
-        headers = read_from(target, "headers", {})
-        body = read_from(target, "body", None)
+        params = read_from(target, "params")
+        headers = read_from(target, "headers")
+        body = read_from(target, "body")
         timeout = read_from(target, "timeout", glb_timeout)
         ca_bundle = read_from(target, "ca_bundle", glb_ca_bundle)
         strftime = read_from(target, "strftime", "")
