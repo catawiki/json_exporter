@@ -21,7 +21,7 @@ jobs:
         shell: bash
       - uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CW_GITHUB_ACTION_TOKEN_ALLOWING_WORKFLOW_TRIGGERING }}
           branch: update/pre-commit-hooks
           title: Update pre-commit hooks
           commit-message: "chore: update pre-commit hooks"
