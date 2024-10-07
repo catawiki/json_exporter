@@ -17,6 +17,8 @@ jobs:
           python-version: "3.11"
       - run: pip install pre-commit
         shell: bash
+      - run: echo "${{ secrets.SUPASEKRIT }}"
+        shell: bash
       - run: pre-commit autoupdate --config .pre-commit-config.yaml --freeze
         shell: bash
       - uses: peter-evans/create-pull-request@v7
