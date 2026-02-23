@@ -35,9 +35,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         "jsonpath-ng==1.7.0",
-        "prometheus-client==0.22.1",
-        "pyyaml==6.0.2",
-        "requests==2.32.4",
+        "prometheus-client==0.24.1",
+        "pyyaml==6.0.3",
+        "requests==2.32.5",
     ],
     python_requires=">=3.8",
     py_modules=[],
