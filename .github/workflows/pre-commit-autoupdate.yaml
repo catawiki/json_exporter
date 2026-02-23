@@ -19,7 +19,7 @@ jobs:
         shell: bash
       - run: pre-commit autoupdate --config .pre-commit-config.yaml --freeze
         shell: bash
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.CW_GITHUB_ACTION_TOKEN_ALLOWING_WORKFLOW_TRIGGERING }}
           branch: update/pre-commit-hooks
