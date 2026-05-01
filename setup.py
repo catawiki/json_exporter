@@ -34,8 +34,8 @@ setup(
     keywords="prometheus json exporter",
     packages=find_packages(),
     install_requires=[
-        "jsonpath-ng==1.7.0",
-        "prometheus-client==0.24.1",
+        "jsonpath-ng==1.8.0",
+        "prometheus-client==0.25.0",
         "pyyaml==6.0.3",
         "requests==2.32.5",
     ],
